@@ -40,7 +40,7 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::on_pushButton_clicked(){
-    if(ui->comboBox->currentText() != NULL && ui->comboBox_2->currentText() != NULL){
+    if(ui->comboBox->currentText() != NULL && ui->comboBox_2->currentText() != NULL && !(ui->lineEdit->text().isEmpty())){
         //Si en el combobox derecho se selecciona nuevo estado
         if(ui->comboBox_2->currentText() == "Nuevo Estado"){
             cant_estados +=1;
