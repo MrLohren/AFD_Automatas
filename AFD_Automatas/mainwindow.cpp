@@ -126,12 +126,13 @@ void appendToList(nodo **l, int num1, string a, int num2){ //Función utilizada 
 
 void MainWindow::on_pushButton_2_clicked()
 {
-    ui->frame->setVisible(false);
+    ui->frame->setDisabled(1);
+    ui->pushButton->setDisabled(1);
     ui->frame_2->setVisible(true);
 }
 
 void MainWindow::on_pushButton_3_clicked()
 {
-    ui->frame_2->setVisible(false);
+    ui->frame_2->setDisabled(1);
     ui->frame_3->setVisible(true);
 }
