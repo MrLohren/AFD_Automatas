@@ -8,6 +8,13 @@
 using namespace std;
 
 // Estructuras //
+//Estados
+struct estado{
+    int val;
+    bool e_inicial;
+    bool e_final;
+};
+typedef struct estado estado;
 //Lista enlazada
 struct transicionList{
     int e_salida;
@@ -19,6 +26,13 @@ struct transicionList{
 //Declaraciones //
 stringstream ss;
 string var;
+
+//Implementación AFD.cpp
+estado Q;
+string E;
+//nodo lista[][]
+//
+
 int cant_estados = 1;
 int i,e_salida,e_llegada;
 QString campotexto;
@@ -32,6 +46,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->label2->setVisible(false);
+    ui->frame_2->setVisible(false);
+    ui->frame_3->setVisible(false);
 }
 
 MainWindow::~MainWindow()
@@ -39,6 +55,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+//1) Creación de Estados y Transiciones
 void MainWindow::on_pushButton_clicked(){
     if(ui->comboBox->currentText() != NULL && ui->comboBox_2->currentText() != NULL && !(ui->lineEdit->text().isEmpty())){
         //Si en el combobox derecho se selecciona nuevo estado
@@ -70,6 +87,7 @@ void MainWindow::on_pushButton_clicked(){
         ss << "Transición Exitosa: q"<<e_salida<<"--("<<ui->lineEdit->text().toStdString()<<")-->q"<<e_llegada;
         ui->label2->setText(QString::fromStdString(ss.str()));
         ui->label2->setVisible(true);
+        ui->listWidget_2->addItem(QString::fromStdString(ss.str()));
         appendToList(&lista,e_salida,ui->lineEdit->text().toStdString(),e_llegada); //Añade un nodo a la lista
     }
     else{
@@ -104,4 +122,16 @@ void appendToList(nodo **l, int num1, string a, int num2){ //Función utilizada 
 
         p->next = nuevo;
     }
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    ui->frame->setVisible(false);
+    ui->frame_2->setVisible(true);
+}
+
+void MainWindow::on_pushButton_3_clicked()
+{
+    ui->frame_2->setVisible(false);
+    ui->frame_3->setVisible(true);
 }
