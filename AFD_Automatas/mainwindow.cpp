@@ -36,6 +36,8 @@ string E;
 int cant_estados = 1;
 int i,e_salida,e_llegada;
 QString campotexto;
+stringstream estado_final;
+stringstream estado_inicial;
 nodo *lista = NULL; //Lista sin elementos
 // Funciones //
 void appendToList(nodo **l, int num1, string a, int num2);
@@ -66,6 +68,7 @@ void MainWindow::on_pushButton_clicked(){
             ui->comboBox->addItem(QString::fromStdString(ss.str()));
             ui->comboBox_2->addItem(QString::fromStdString(ss.str()));
             ui->listWidget->addItem(QString::fromStdString(ss.str()));
+
             //aqui iba el ctrl x
             e_llegada = cant_estados-1;  //No es necesario obtener el valor desde el combobox derecho ya que es un estado nuevo
         }
@@ -129,10 +132,25 @@ void MainWindow::on_pushButton_2_clicked()
     ui->frame->setDisabled(1);
     ui->pushButton->setDisabled(1);
     ui->frame_2->setVisible(true);
+    for(i=0;i<cant_estados;i++){
+        ss.str(string());
+        ss<<"q"<<i;
+        ui->comboBoxEInicial->addItem(QString::fromStdString(ss.str()));
+        ui->comboBoxEFinal->addItem(QString::fromStdString(ss.str()));
+    }
 }
 
 void MainWindow::on_pushButton_3_clicked()
 {
     ui->frame_2->setDisabled(1);
     ui->frame_3->setVisible(true);
+    estado_inicial<<ui->comboBoxEInicial->currentText().toStdString();
+    ui->listWidgetEIniciales->addItem(QString::fromStdString(estado_inicial.str()));
+}
+
+void MainWindow::on_pushButtonEFinales_clicked()
+{
+    estado_final <<ui->comboBoxEFinal->currentText().toStdString();
+    ui->listWidgetEFinales->addItem(QString::fromStdString(estado_final.str()));
+    std::stringstream().swap(estado_final);
 }
