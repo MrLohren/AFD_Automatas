@@ -9,12 +9,13 @@ using namespace std;
 
 // Estructuras //
 //Estados
-struct estado{
+struct estadoList{
     int val;
     bool e_inicial;
     bool e_final;
+    estadoList* next;
 };
-typedef struct estado estado;
+typedef struct estadoList estado;
 //Lista enlazada
 struct transicionList{
     int e_salida;
@@ -27,19 +28,15 @@ struct transicionList{
 stringstream ss;
 string var;
 
-//Implementación AFD.cpp
-estado Q;
-string E;
-//nodo lista[][]
-//
-
 int cant_estados = 1;
-int i,e_salida,e_llegada;
+int i, j, e_salida,e_llegada;
 QString campotexto;
 stringstream estado_final;
 stringstream estado_inicial;
+estado *listaEstado = NULL;
 nodo *lista = NULL; //Lista sin elementos
 // Funciones //
+void appendToListEstado(estado **l, bool e_inicial, bool e_final, int val);
 void appendToList(nodo **l, int num1, string a, int num2);
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -126,7 +123,23 @@ void appendToList(nodo **l, int num1, string a, int num2){ //Función utilizada 
         p->next = nuevo;
     }
 }
+void appendToListEstado(estado **l, bool e_inicial, bool e_final, int val){ //Función utilizada para añadir nodos a una lista
+    estado *nuevo = new estado;
+    nuevo->e_final = false;
+    nuevo->e_inicial = false;
+    nuevo->val = val;
 
+    nuevo->next = NULL;
+    if (*l == nullptr)
+        *l = nuevo;
+    else{
+        estado *p = *l;
+        while (p->next != nullptr)
+            p = p->next;
+
+        p->next = nuevo;
+    }
+}
 void MainWindow::on_pushButton_2_clicked()
 {
     ui->frame->setDisabled(1);
@@ -138,6 +151,9 @@ void MainWindow::on_pushButton_2_clicked()
         ui->comboBoxEInicial->addItem(QString::fromStdString(ss.str()));
         ui->comboBoxEFinal->addItem(QString::fromStdString(ss.str()));
     }
+   for(i = 0; i< cant_estados; i++){
+       appendToListEstado(&listaEstado, false, false, i);
+   }
 }
 
 void MainWindow::on_pushButton_3_clicked()
@@ -146,11 +162,34 @@ void MainWindow::on_pushButton_3_clicked()
     ui->frame_3->setVisible(true);
     estado_inicial<<ui->comboBoxEInicial->currentText().toStdString();
     ui->listWidgetEIniciales->addItem(QString::fromStdString(estado_inicial.str()));
+    ss.str(string());
+    for(i=1;i<(ui->comboBoxEInicial->currentText().toStdString().length());i++){  //En este for se hace e_salida igual al valor seleccionado en el combobox izquierdo
+        ss<<(ui->comboBoxEInicial->currentText().toStdString()[i]);
+    }
+    j=stoi(ss.str());
+    estado *p = listaEstado;
+    for(i =0; i<j; i++){
+        p = p->next;
+    }
+    p->e_inicial= true;
+
 }
 
 void MainWindow::on_pushButtonEFinales_clicked()
 {
+
     estado_final <<ui->comboBoxEFinal->currentText().toStdString();
     ui->listWidgetEFinales->addItem(QString::fromStdString(estado_final.str()));
-    std::stringstream().swap(estado_final);
+    stringstream().swap(estado_final);
+    ss.str(string());
+    for(i=1;i<(ui->comboBoxEFinal->currentText().toStdString().length());i++){  //En este for se hace e_llegada igual al valor seleccionado en el combobox derecho
+        ss<<(ui->comboBoxEFinal->currentText().toStdString()[i]);
+    }
+    j=stoi(ss.str());
+    estado *p = listaEstado;
+    for(i =0; i<j; i++){
+        p = p->next;
+    }
+    p->e_final = true;
+
 }
