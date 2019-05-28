@@ -28,15 +28,16 @@ struct transicionList{
 stringstream ss;
 int cant_estados = 1;
 int i, j, e_salida,e_llegada;
-QString campotexto;
 stringstream estado_final;
 stringstream estado_inicial;
+nodo *p;
 estado *listaEstado = NULL; //Lista de Estados vacía
 nodo *lista = NULL; //Lista de Transiciones vacía
 // Funciones //
 void appendToListEstado(estado **l, bool e_inicial, bool e_final, int val);  //Función utilizada para añadir nodos a una lista de Estados
 void appendToList(nodo **l, int num1, string a, int num2); //Función utilizada para añadir nodos a una lista de Transiciones
 int valorComboBox(string a);  //Retorna el valor que hay seleccionado en un combobox con el texto "q" seguido de un número
+bool comprobar(string s, int i);
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -57,7 +58,8 @@ MainWindow::~MainWindow()
 void MainWindow::on_pushButton_clicked(){
     if(ui->comboBox->currentText() != NULL && ui->comboBox_2->currentText() != NULL && !(ui->lineEdit->text().isEmpty())){
         //Si en el combobox derecho se selecciona nuevo estado
-        if(ui->comboBox_2->currentText() == "Nuevo Estado"){
+        if(ui->lineEdit->text().toStdString().length() == 1){
+           if(ui->comboBox_2->currentText() == "Nuevo Estado"){
             cant_estados +=1;
             ss.str(string());
             ss<<"q"<<cant_estados-1;
@@ -78,6 +80,11 @@ void MainWindow::on_pushButton_clicked(){
         ui->label2->setVisible(true);
         ui->listWidget_2->addItem(QString::fromStdString(ss.str()));
         appendToList(&lista,e_salida,ui->lineEdit->text().toStdString(),e_llegada); //Añade un nodo a la lista
+        }
+        else{
+            ui->label2->setText("Ingresó más de un símbolo de transición");
+            ui->label2->setVisible(true);
+        }
     }
     else{
         ui->label2->setText("No ha rellenado todos los campos necesarios.");
@@ -180,4 +187,25 @@ int valorComboBox(string a){
         ss<<a[i];
     }
     return stoi(ss.str());
+}
+
+void MainWindow::on_pushButton_4_clicked()
+{
+    if(ui->lineEdit_3->text() != NULL){
+        //se comprueba la palabra ingresada
+        if(comprobar(ui->lineEdit_3->text().toStdString(), j)){
+            //la palabra es aceptada
+        }
+    }
+    else{
+        //La palabra es rechazada
+    }
+}
+
+bool comprobar(string s, int i){
+    /*p = lista;
+    while(p != nullptr){
+        p = p->next
+    }*/
+    return false;
 }
