@@ -1,21 +1,20 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-// Inclusiones propias //
+//Inclusiones propias
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
 using namespace std;
 
-// Estructuras //
+//Estructuras
 //Lista enlazada de Estados
 struct estadoList{
     int val;
     bool e_inicial;
     bool e_final;
     estadoList* next;
-};
-typedef struct estadoList estado;
+}; typedef struct estadoList estado;
 //Lista enlazada de Transiciones
 struct transicionList{
     int e_salida;
@@ -24,42 +23,47 @@ struct transicionList{
     transicionList* next;
 }; typedef struct transicionList nodo;
 
-//Declaraciones //
+//Declaraciones
 stringstream ss;
 int cant_estados = 1;
 int i, j, e_salida,e_llegada;
 stringstream estado_final;
 stringstream estado_inicial;
-nodo *p;
-estado *listaEstado = NULL; //Lista de Estados vacía
-nodo *lista = NULL; //Lista de Transiciones vacía
-// Funciones //
+estado *listaEstado = nullptr; //Lista de Estados vacía
+nodo *listaTransiciones = nullptr; //Lista de Transiciones vacía
+
+//Funciones
 void appendToListEstado(estado **l, bool e_inicial, bool e_final, int val);  //Función utilizada para añadir nodos a una lista de Estados
 void appendToList(nodo **l, int num1, string a, int num2); //Función utilizada para añadir nodos a una lista de Transiciones
 int valorComboBox(string a);  //Retorna el valor que hay seleccionado en un combobox con el texto "q" seguido de un número
-bool comprobar(string s, int i);
+void printListEstado(estado *l);
+void printListTransiciones(nodo *l);
+bool transicionExistente(nodo *l,int e_salida,string sim);  //Retorna true si la transición ya existe o false si no existe en la lista de transiciones
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
-{
+    ui(new Ui::MainWindow){
     ui->setupUi(this);
     ui->label2->setVisible(false);
     ui->frame_2->setVisible(false);
     ui->frame_3->setVisible(false);
+    appendToListEstado(&listaEstado, false, false, 0);
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow(){
     delete ui;
 }
 
 //Creación de Estados y Transiciones
 void MainWindow::on_pushButton_clicked(){
-    if(ui->comboBox->currentText() != NULL && ui->comboBox_2->currentText() != NULL && !(ui->lineEdit->text().isEmpty())){
+    if(ui->comboBox->currentText() != NULL  //Combobox izquierdo no nulo
+            && ui->comboBox_2->currentText() != NULL  //Combobox derecho no nulo
+            && !(ui->lineEdit->text().isEmpty())  //Campo de texto no vacío
+            && ui->lineEdit->text().toStdString().length() == 1  //Sólo un símbolo en el campo de texto
+            && !(transicionExistente(listaTransiciones,valorComboBox(ui->comboBox->currentText().toStdString()),ui->lineEdit->text().toStdString())))
+    {
         //Si en el combobox derecho se selecciona nuevo estado
-        if(ui->lineEdit->text().toStdString().length() == 1){
-           if(ui->comboBox_2->currentText() == "Nuevo Estado"){
+        if(ui->comboBox_2->currentText() == "Nuevo Estado"){
             cant_estados +=1;
             ss.str(string());
             ss<<"q"<<cant_estados-1;
@@ -67,29 +71,26 @@ void MainWindow::on_pushButton_clicked(){
             ui->comboBox_2->addItem(QString::fromStdString(ss.str()));
             ui->listWidget->addItem(QString::fromStdString(ss.str()));
             e_llegada = cant_estados-1;  //No es necesario obtener el valor desde el combobox derecho ya que es un estado nuevo
+            appendToListEstado(&listaEstado,false,false,e_llegada);
         }
         //Si en el combobox derecho se selecciona un estado existente
         else{
             e_llegada=valorComboBox(ui->comboBox_2->currentText().toStdString());
         }
         //Aplica para ambos tipos de transición
-        e_salida=valorComboBox(ui->comboBox->currentText().toStdString()); //Valor del combobox izquierdo
+        e_salida=valorComboBox(ui->comboBox->currentText().toStdString());
         ss.str(string());
         ss << "Transición Exitosa: q"<<e_salida<<"--("<<ui->lineEdit->text().toStdString()<<")-->q"<<e_llegada;
         ui->label2->setText(QString::fromStdString(ss.str()));
-        ui->label2->setVisible(true);
         ui->listWidget_2->addItem(QString::fromStdString(ss.str()));
-        appendToList(&lista,e_salida,ui->lineEdit->text().toStdString(),e_llegada); //Añade un nodo a la lista
-        }
-        else{
-            ui->label2->setText("Ingresó más de un símbolo de transición");
-            ui->label2->setVisible(true);
-        }
+        appendToList(&listaTransiciones,e_salida,ui->lineEdit->text().toStdString(),e_llegada); //Añade una transición a la lista
     }
     else{
-        ui->label2->setText("No ha rellenado todos los campos necesarios.");
-        ui->label2->setVisible(true);
+        ui->label2->setText("Transición no válida.");
     }
+    printListTransiciones(listaTransiciones);
+    printListEstado(listaEstado);
+    ui->label2->setVisible(true);
 }
 
 void MainWindow::on_comboBox_activated(const QString &arg1)
@@ -107,7 +108,7 @@ void appendToList(nodo **l, int num1, string a, int num2){
     nuevo->e_salida = num1;
     nuevo->sim_transicion = a;
     nuevo->e_llegada = num2;
-    nuevo->next = NULL;
+    nuevo->next = nullptr;
     if (*l == nullptr)
         *l = nuevo;
     else{
@@ -124,7 +125,7 @@ void appendToListEstado(estado **l, bool e_inicial, bool e_final, int val){
     nuevo->e_final = false;
     nuevo->e_inicial = false;
     nuevo->val = val;
-    nuevo->next = NULL;
+    nuevo->next = nullptr;
     if (*l == nullptr)
         *l = nuevo;
     else{
@@ -147,9 +148,6 @@ void MainWindow::on_pushButton_2_clicked()
         ui->comboBoxEInicial->addItem(QString::fromStdString(ss.str()));
         ui->comboBoxEFinal->addItem(QString::fromStdString(ss.str()));
     }
-   for(i = 0; i< cant_estados; i++){
-       appendToListEstado(&listaEstado, false, false, i);
-   }
 }
 
 void MainWindow::on_pushButton_3_clicked()
@@ -193,19 +191,40 @@ void MainWindow::on_pushButton_4_clicked()
 {
     if(ui->lineEdit_3->text() != NULL){
         //se comprueba la palabra ingresada
-        if(comprobar(ui->lineEdit_3->text().toStdString(), j)){
-            //la palabra es aceptada
-        }
     }
     else{
         //La palabra es rechazada
     }
 }
 
-bool comprobar(string s, int i){
-    /*p = lista;
+void printListEstado(estado *l){
+    estado *p = l;
+    cout << "Q = ";
     while(p != nullptr){
-        p = p->next
-    }*/
-    return false;
+        cout << p->val << " ";
+        p = p->next;
+    }
+    cout << endl;
+}
+
+void printListTransiciones(nodo *l){
+    nodo *p = l;
+    cout << "Transiciones = ";
+    while(p != nullptr){
+        cout << p->e_salida <<p->sim_transicion<<p->e_llegada<< " |";
+        p = p->next;
+    }
+    cout << endl;
+}
+
+bool transicionExistente(nodo *l,int e_salida,string sim){
+    nodo *p = l;
+    bool b = false;
+    while(p != nullptr){
+        if(e_salida==p->e_salida && sim==p->sim_transicion){
+            b=true;
+        }
+        p = p->next;
+    }
+    return b;
 }
