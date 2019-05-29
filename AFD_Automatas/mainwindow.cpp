@@ -24,7 +24,7 @@ struct transicionList{
 }; typedef struct transicionList nodo;
 
 //Declaraciones
-stringstream ss,estado_final,estado_inicial;
+stringstream ss,ss2,estado_final,estado_inicial;
 int cant_estados = 1;
 int i, j, e_salida,e_llegada;
 estado *listaEstado = nullptr; //Lista de Estados vacía
@@ -35,6 +35,7 @@ void appendToListEstado(estado **l, int val);  //Función utilizada para añadir
 void appendToList(nodo **l, int num1, string a, int num2); //Función utilizada para añadir nodos a una lista de Transiciones
 int valorComboBox(string a);  //Retorna el valor que hay seleccionado en un combobox con el texto "q" seguido de un número
 bool transicionExistente(nodo *l,int e_salida,string sim);  //Retorna true si la transición ya existe o false si no existe en la lista de transiciones
+bool comprobarPalabra(string s,int pos);
 void printListEstado(estado *l);  //DEBUG
 void printListTransiciones(nodo *l); //DEBUG
 
@@ -163,14 +164,30 @@ void MainWindow::on_pushButton_3_clicked()
 
 }
 
-void MainWindow::on_pushButton_4_clicked()
-{
+void MainWindow::on_pushButton_4_clicked(){
+    ss.str(string());
+    ss<<"Palabra rechazada";
     if(ui->lineEdit_3->text() != NULL){
-        //se comprueba la palabra ingresada
+        if(comprobarPalabra(ui->lineEdit_3->text().toStdString(),j)){
+            ss.str(string());
+            ss << "Palabra aceptada";
+        }
+        else{
+            ss<<"Palabra rechazada";
+        }
     }
     else{
-        //La palabra es rechazada
+        //No ingresó nada
+        estado *p = listaEstado;
+        for(i =0; i<j; i++){
+            p = p->next;
+        }
+        if(p->e_inicial&&p->e_final){
+            ss.str(string());
+            ss<<"Palabra aceptada";
+        }
     }
+    ui->label_15->setText(QString::fromStdString(ss.str()));
 }
 
 void MainWindow::on_pushButtonEFinales_clicked()
@@ -223,6 +240,39 @@ bool transicionExistente(nodo *l,int e_salida,string sim){
             b=true;
         }
         p = p->next;
+    }
+    return b;
+}
+
+bool comprobarPalabra(string s,int pos){
+    cout<<"Revisando la palabra: "<<s<<" estado actual: "<<pos<<endl;  //DEBUG
+    bool b = false;
+    nodo *p = listaTransiciones;
+    ss.str(string());
+    ss2.str(string());
+    ss2<<s[0];
+    while(p!=nullptr && p->e_salida!=pos && ss.str()!=ss2.str()){  //Hacemos que p apunte a la transición que deseamos analizar
+        p=p->next;
+        ss.str(string());
+        ss<<p->sim_transicion;
+    }
+    if(p!=nullptr){  //Si es que hayamos la transición
+        ss.str(string());
+        for(i=1;i<s.length();i++){ //Quita el primer símbolo de la palabra
+            ss<<s[i];
+        }
+        if(s.length()>0){
+            b=comprobarPalabra(ss.str(),p->e_llegada);
+        }
+        else{  //Comprobar si el estado de llegada al leer este símbolo es estado final
+            estado *q = listaEstado;
+            for(i=0;i<pos;i++){
+                q=q->next;
+            }
+            if(q->e_final){
+                b=true;
+            }
+        }
     }
     return b;
 }
