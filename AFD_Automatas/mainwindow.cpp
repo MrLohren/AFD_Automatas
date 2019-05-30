@@ -2,9 +2,10 @@
 #include "ui_mainwindow.h"
 
 //Inclusiones propias
-#include <iostream>
-#include <sstream>
-#include <cstdlib>
+#include <iostream> //cout y utilidades usadas para debug
+#include <sstream>  //uso de stringstream
+#include <cstdlib>  //no la hemos usado, probablemente la borremos antes de entregar el trabajo
+#include <ctype.h>  //uso de funcion isdigit()
 using namespace std;
 
 //Estructuras
@@ -36,6 +37,7 @@ void appendToList(nodo **l, int num1, string a, int num2); //Función utilizada 
 int valorComboBox(string a);  //Retorna el valor que hay seleccionado en un combobox con el texto "q" seguido de un número
 bool transicionExistente(nodo *l,int e_salida,string sim);  //Retorna true si la transición ya existe o false si no existe en la lista de transiciones
 bool comprobarPalabra(string s,int pos);
+bool stringEntero(string s);  //Comprueba que un string está sólo compuesto de valores enteros
 void printListEstado(estado *l);  //DEBUG
 void printListTransiciones(nodo *l); //DEBUG
 
@@ -46,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->label2->setVisible(false);
     ui->frame_2->setVisible(false);
     ui->frame_3->setVisible(false);
+    ui->frame_4->setVisible(false);
     appendToListEstado(&listaEstado, 0);
 }
 
@@ -54,31 +57,16 @@ MainWindow::~MainWindow(){
 }
 
 //Creación de Estados y Transiciones
-void MainWindow::on_pushButton_clicked(){
+void MainWindow::on_pushButton_clicked(){  //Botón ingresar transición
     if(ui->comboBox->currentText() != NULL  //Combobox izquierdo no nulo
             && ui->comboBox_2->currentText() != NULL  //Combobox derecho no nulo
             && !(ui->lineEdit->text().isEmpty())  //Campo de texto no vacío
             && ui->lineEdit->text().toStdString().length() == 1  //Sólo un símbolo en el campo de texto
             && !(transicionExistente(listaTransiciones,valorComboBox(ui->comboBox->currentText().toStdString()),ui->lineEdit->text().toStdString()))){
-        //Si en el combobox derecho se selecciona nuevo estado
-        if(ui->comboBox_2->currentText() == "Nuevo Estado"){
-            ss.str(string());
-            ss<<"q"<<cant_estados;
-            ui->comboBox->addItem(QString::fromStdString(ss.str()));
-            ui->comboBox_2->addItem(QString::fromStdString(ss.str()));
-            ui->listWidget->addItem(QString::fromStdString(ss.str()));
-            e_llegada=cant_estados;  //No es necesario obtener el valor del e_llegada desde el combobox derecho ya que es un estado nuevo cuyo numero asociado es igual a la cantidad de estados existentes
-            appendToListEstado(&listaEstado,e_llegada);
-            cant_estados +=1;
-        }
-        //Si en el combobox derecho se selecciona un estado existente
-        else{
-            e_llegada=valorComboBox(ui->comboBox_2->currentText().toStdString());
-        }
-        //Aplica para ambos tipos de transición
+        e_llegada=valorComboBox(ui->comboBox_2->currentText().toStdString());
         e_salida=valorComboBox(ui->comboBox->currentText().toStdString());
         ss.str(string());
-        ss << "q"<<e_salida<<"--("<<ui->lineEdit->text().toStdString()<<")-->q"<<e_llegada;
+        ss << "(q"<<e_salida<<")--"<<ui->lineEdit->text().toStdString()<<"-->(q"<<e_llegada<<")";
         ui->label2->setText(QString::fromStdString(ss.str()));
         ui->listWidget_2->addItem(QString::fromStdString(ss.str()));
         appendToList(&listaTransiciones,e_salida,ui->lineEdit->text().toStdString(),e_llegada); //Añade una transición a la lista
@@ -86,8 +74,8 @@ void MainWindow::on_pushButton_clicked(){
     else{
         ui->label2->setText("Transición no válida.");
     }
-    printListTransiciones(listaTransiciones);
-    printListEstado(listaEstado);
+    printListTransiciones(listaTransiciones);  //DEBUG
+    printListEstado(listaEstado);  //DEBUG
     ui->label2->setVisible(true);
 }
 
@@ -136,7 +124,7 @@ void appendToListEstado(estado **l, int val){
     }
 }
 
-void MainWindow::on_pushButton_2_clicked()
+void MainWindow::on_pushButton_2_clicked()  //Boton terminar de ingresar transiciones
 {
     ui->frame->setDisabled(1);
     ui->pushButton->setDisabled(1);
@@ -149,7 +137,7 @@ void MainWindow::on_pushButton_2_clicked()
     }
 }
 
-void MainWindow::on_pushButton_3_clicked()
+void MainWindow::on_pushButton_3_clicked()  //Boton terminar de ingresar estados finales/iniciales
 {
     ui->frame_2->setDisabled(1);
     ui->frame_3->setVisible(true);
@@ -164,7 +152,7 @@ void MainWindow::on_pushButton_3_clicked()
 
 }
 
-void MainWindow::on_pushButton_4_clicked(){
+void MainWindow::on_pushButton_4_clicked(){  //Boton comprobar palabra
     ss.str(string());
     ss<<"Palabra rechazada";
     if(ui->lineEdit_3->text() != NULL){
@@ -190,8 +178,7 @@ void MainWindow::on_pushButton_4_clicked(){
     ui->label_15->setText(QString::fromStdString(ss.str()));
 }
 
-void MainWindow::on_pushButtonEFinales_clicked()
-{
+void MainWindow::on_pushButtonEFinales_clicked(){  //Boton ingresar estados finales
     estado_final <<ui->comboBoxEFinal->currentText().toStdString();
     ui->listWidgetEFinales->addItem(QString::fromStdString(estado_final.str()));
     stringstream().swap(estado_final);
@@ -279,6 +266,64 @@ bool comprobarPalabra(string s,int pos){
                 b=true;
             }
         }
+    }
+    return b;
+}
+
+void MainWindow::on_pushButton_5_clicked(){  //Botón aceptar en estado nuevo
+    if(!(ui->lineEdit_2->text().isEmpty())  //Valor de int no vacío
+            &&stringEntero(ui->lineEdit_2->text().toStdString())  //Sólo numeros en el numero de estado
+            && !(ui->lineEdit->text().isEmpty())  //Campo de texto no vacío
+            && ui->lineEdit->text().toStdString().length() == 1  //Sólo un símbolo en el campo de texto
+            && !(transicionExistente(listaTransiciones,valorComboBox(ui->comboBox->currentText().toStdString()),ui->lineEdit->text().toStdString()))
+            && ui->comboBox->currentText() != NULL  //Combobox izquierdo no nulo
+            && cant_estados<=stoi(ui->lineEdit_2->text().toStdString())  //Estado no existente previamente
+            ){
+        e_llegada=stoi(ui->lineEdit_2->text().toStdString());
+        for(i=cant_estados;i<e_llegada+1;i++){  //Crea estados hasta el que se indica
+            ss.str(string());
+            ss<<"q"<<(i);
+            appendToListEstado(&listaEstado,i);
+            ui->comboBox->addItem(QString::fromStdString(ss.str()));
+            ui->comboBox_2->addItem(QString::fromStdString(ss.str()));
+            ui->listWidget->addItem(QString::fromStdString(ss.str()));
+        }
+        cant_estados=e_llegada+1;
+        e_salida=valorComboBox(ui->comboBox->currentText().toStdString());
+        ss.str(string());
+        ss << "(q"<<e_salida<<")--"<<ui->lineEdit->text().toStdString()<<"-->(q"<<e_llegada<<")";
+        ui->label2->setText(QString::fromStdString(ss.str()));
+        ui->listWidget_2->addItem(QString::fromStdString(ss.str()));
+        appendToList(&listaTransiciones,e_salida,ui->lineEdit->text().toStdString(),e_llegada); //Añade una transición a la lista
+        ui->pushButton->setDisabled(false);
+        ui->comboBox_2->setDisabled(false);
+        ui->comboBox_2->setCurrentIndex(0);
+        ui->frame_4->setVisible(false);
+    }
+    else{
+        ui->label2->setText("Transición no válida.");
+    }
+    printListTransiciones(listaTransiciones);  //DEBUG
+    printListEstado(listaEstado);  //DEBUG
+    ui->label2->setVisible(true);
+}
+
+void MainWindow::on_comboBox_2_currentTextChanged(const QString &arg1){ //Selecciona nuevo estado en combobox derecho
+    if(ui->comboBox_2->currentText() == "Nuevo Estado"){
+        ui->comboBox_2->setDisabled(true);
+        ui->pushButton->setDisabled(true);
+        ui->frame_4->setVisible(true);
+    }
+}
+
+bool stringEntero(string s){
+    bool b = true;
+    i=0;
+    while(i<s.length() && b){
+        if(s[i]<48||s[i]>57){  //el caracter NO está entre 0 y 9
+            b=false;
+        }
+        i+=1;
     }
     return b;
 }
