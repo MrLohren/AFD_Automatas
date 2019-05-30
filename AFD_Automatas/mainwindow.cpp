@@ -249,12 +249,16 @@ bool comprobarPalabra(string s,int pos){
     bool b = false;
     nodo *p = listaTransiciones;
     ss.str(string());
+    ss<<p->sim_transicion;
     ss2.str(string());
     ss2<<s[0];
-    while(p!=nullptr && p->e_salida!=pos && ss.str()!=ss2.str()){  //Hacemos que p apunte a la transición que deseamos analizar
+    cout<<"ss.str="<<ss.str()<<"  ss2.str="<<ss2.str()<<" pos="<<pos<<" p->e_salida="<<p->e_salida<<endl;  //DEBUG
+    while(p!=nullptr && s.length()>0 && (p->e_salida!=pos || ss.str()!=ss2.str())){  //Hacemos que p apunte a la transición que deseamos analizar
         p=p->next;
         ss.str(string());
-        ss<<p->sim_transicion;
+        if(p!=nullptr){
+            ss<<p->sim_transicion;
+        }
     }
     if(p!=nullptr){  //Si es que hayamos la transición
         ss.str(string());
@@ -262,9 +266,11 @@ bool comprobarPalabra(string s,int pos){
             ss<<s[i];
         }
         if(s.length()>0){
+            cout<<"Existe la transición "<<p->e_salida<<p->sim_transicion<<p->e_llegada<<endl;  //DEBUG
             b=comprobarPalabra(ss.str(),p->e_llegada);
         }
         else{  //Comprobar si el estado de llegada al leer este símbolo es estado final
+            cout<<"Comprobando si "<<p->e_llegada<<" es estado final"<<endl;  //DEBUG
             estado *q = listaEstado;
             for(i=0;i<pos;i++){
                 q=q->next;
