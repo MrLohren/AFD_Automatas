@@ -37,8 +37,6 @@ int valorComboBox(string a);  //Retorna el valor que hay seleccionado en un comb
 bool transicionExistente(nodo *l,int e_salida,string sim);  //Retorna true si la transición ya existe o false si no existe en la lista de transiciones
 bool comprobarPalabra(string s,int pos);
 bool stringEntero(string s);  //Comprueba que un string está sólo compuesto de valores enteros
-void printListEstado(estado *l);  //DEBUG
-void printListTransiciones(nodo *l); //DEBUG
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -65,7 +63,7 @@ void MainWindow::on_pushButton_clicked(){  //Botón ingresar transición
         e_llegada=valorComboBox(ui->comboBox_2->currentText().toStdString());
         e_salida=valorComboBox(ui->comboBox->currentText().toStdString());
         ss.str(string());
-        ss << "(q"<<e_salida<<")--"<<ui->lineEdit->text().toStdString()<<"-->(q"<<e_llegada<<")";
+        ss << "δ(q"<<e_salida<<","<<ui->lineEdit->text().toStdString()<<")---->q"<<e_llegada;
         ui->label2->setText(QString::fromStdString(ss.str()));
         ui->listWidget_2->addItem(QString::fromStdString(ss.str()));
         appendToList(&listaTransiciones,e_salida,ui->lineEdit->text().toStdString(),e_llegada); //Añade una transición a la lista
@@ -73,8 +71,6 @@ void MainWindow::on_pushButton_clicked(){  //Botón ingresar transición
     else{
         ui->label2->setText("Transición no válida.");
     }
-    printListTransiciones(listaTransiciones);  //DEBUG
-    printListEstado(listaEstado);  //DEBUG
     ui->label2->setVisible(true);
 }
 
@@ -123,8 +119,7 @@ void appendToListEstado(estado **l, int val){
     }
 }
 
-void MainWindow::on_pushButton_2_clicked()  //Boton terminar de ingresar transiciones
-{
+void MainWindow::on_pushButton_2_clicked(){  //Boton terminar de ingresar transiciones
     ui->frame->setDisabled(1);
     ui->pushButton->setDisabled(1);
     ui->frame_2->setVisible(true);
@@ -136,8 +131,7 @@ void MainWindow::on_pushButton_2_clicked()  //Boton terminar de ingresar transic
     }
 }
 
-void MainWindow::on_pushButton_3_clicked()  //Boton terminar de ingresar estados finales/iniciales
-{
+void MainWindow::on_pushButton_3_clicked(){  //Boton terminar de ingresar estados finales/iniciales
     ui->frame_2->setDisabled(1);
     ui->frame_3->setVisible(true);
     estado_inicial<<ui->comboBoxEInicial->currentText().toStdString();
@@ -198,26 +192,6 @@ int valorComboBox(string a){
     return stoi(ss.str());
 }
 
-void printListEstado(estado *l){  //DEBUG
-    estado *p = l;
-    cout << "Q = ";
-    while(p != nullptr){
-        cout << p->val << " ";
-        p = p->next;
-    }
-    cout << endl;
-}
-
-void printListTransiciones(nodo *l){  //DEBUG
-    nodo *p = l;
-    cout << "Transiciones = ";
-    while(p != nullptr){
-        cout << p->e_salida <<p->sim_transicion<<p->e_llegada<< " |";
-        p = p->next;
-    }
-    cout << endl;
-}
-
 bool transicionExistente(nodo *l,int e_salida,string sim){
     nodo *p = l;
     bool b = false;
@@ -231,7 +205,6 @@ bool transicionExistente(nodo *l,int e_salida,string sim){
 }
 
 bool comprobarPalabra(string s,int pos){
-    cout<<"Revisando la palabra: "<<s<<" estado actual: "<<pos<<endl;  //DEBUG
     bool b = false;
     nodo *p = listaTransiciones;
     ss.str(string());
@@ -239,7 +212,6 @@ bool comprobarPalabra(string s,int pos){
     ss2<<s[0];
     if(p!=nullptr){
         ss<<p->sim_transicion;
-    cout<<"ss.str="<<ss.str()<<"  ss2.str="<<ss2.str()<<" pos="<<pos<<" p->e_salida="<<p->e_salida<<endl;  //DEBUG
     }
     while(p!=nullptr && s.length()>0 && !(p->e_salida==pos && ss.str()==ss2.str())){  //Hacemos que p apunte a la transición que deseamos analizar
         p=p->next;
@@ -254,11 +226,9 @@ bool comprobarPalabra(string s,int pos){
             ss<<s[i];
         }
         if(s.length()>0){
-            cout<<"Existe la transición "<<p->e_salida<<p->sim_transicion<<p->e_llegada<<endl;  //DEBUG
             b=comprobarPalabra(ss.str(),p->e_llegada);
         }
         else{  //Comprobar si el estado de llegada al leer este símbolo es estado final
-            cout<<"Comprobando si "<<p->e_llegada<<" es estado final"<<endl;  //DEBUG
             estado *q = listaEstado;
             for(i=0;i<pos;i++){
                 q=q->next;
@@ -292,7 +262,7 @@ void MainWindow::on_pushButton_5_clicked(){  //Botón aceptar en estado nuevo
         cant_estados=e_llegada+1;
         e_salida=valorComboBox(ui->comboBox->currentText().toStdString());
         ss.str(string());
-        ss << "(q"<<e_salida<<")--"<<ui->lineEdit->text().toStdString()<<"-->(q"<<e_llegada<<")";
+        ss << "δ(q"<<e_salida<<","<<ui->lineEdit->text().toStdString()<<")---->q"<<e_llegada;
         ui->label2->setText(QString::fromStdString(ss.str()));
         ui->listWidget_2->addItem(QString::fromStdString(ss.str()));
         appendToList(&listaTransiciones,e_salida,ui->lineEdit->text().toStdString(),e_llegada); //Añade una transición a la lista
@@ -304,12 +274,10 @@ void MainWindow::on_pushButton_5_clicked(){  //Botón aceptar en estado nuevo
     else{
         ui->label2->setText("Transición no válida.");
     }
-    printListTransiciones(listaTransiciones);  //DEBUG
-    printListEstado(listaEstado);  //DEBUG
     ui->label2->setVisible(true);
 }
 
-void MainWindow::on_comboBox_2_currentTextChanged(const QString &arg1){ //Selecciona nuevo estado en combobox derecho
+void MainWindow::on_comboBox_2_currentTextChanged(const QString &arg1){ //Selecciona "Nuevo estado" en combobox derecho
     if(ui->comboBox_2->currentText() == "Nuevo Estado"){
         ui->comboBox_2->setDisabled(true);
         ui->pushButton->setDisabled(true);

@@ -35,6 +35,8 @@ private slots:
 
     void on_comboBox_2_currentTextChanged(const QString &arg1);
 
+    void on_botonTermIngTrans_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
