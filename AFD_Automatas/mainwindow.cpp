@@ -5,7 +5,6 @@
 #include <iostream> //cout y utilidades usadas para debug
 #include <sstream>  //uso de stringstream
 #include <cstdlib>  //no la hemos usado, probablemente la borremos antes de entregar el trabajo
-#include <ctype.h>  //uso de funcion isdigit()
 using namespace std;
 
 //Estructuras
@@ -179,48 +178,16 @@ void MainWindow::on_pushButton_4_clicked(){  //Boton comprobar palabra
 }
 
 void MainWindow::on_pushButtonEFinales_clicked(){  //Boton ingresar estados finales
-    estado_final <<ui->comboBoxEFinal->currentText().toStdString(); //toma el estado final seleccionado en el comboBox de estados finales
-    QString allNamesInOneString; //Con este QString podremos recorrer la QListWidget
-    int names = ui->listWidgetEFinales->count(); //Obtenemos el numero de elementos del QListWidget EFinales
-    int i=0;
-    bool validador=false; //Este validador nos permitira saber si un estado final ya fue registrado en el QlistWidget de estados finales
-    if(names==0){ //Si no hay estados finales registrados, simplemente agregamos
-        ui->listWidgetEFinales->addItem(QString::fromStdString(estado_final.str()));
-        stringstream().swap(estado_final);
-
-        j=valorComboBox(ui->comboBoxEFinal->currentText().toStdString());
-        estado *p = listaEstado;
-        for(i =0; i<j; i++){
-            p = p->next;
-        }
-        p->e_final = true;
+    estado *p=listaEstado;
+    while(p!= nullptr && p->val!=valorComboBox(ui->comboBoxEFinal->currentText().toStdString())){
+        p=p->next;
     }
-    else{ //Por otro lado, si ya hay estados registrados, verificamos si el estado que estamos seleccionando con el boton ya estaba en el QListWidget de estados finales
-    while(i<names && validador==false){
-
-    allNamesInOneString = ui->listWidgetEFinales->item(i)->text();
-    if(estado_final.str()!=allNamesInOneString.toStdString()){ //Si no coinciden los estados finales, seguimos recorriendo
-            i+=1;
-
+    if(p!=nullptr && !(p->e_final)){
+        ss.str(string());
+        ss<<"q"<<p->val;
+        p->e_final=true;
+        ui->listWidgetEFinales->addItem(QString::fromStdString(ss.str()));
     }
-    else{ //Si los estados finales coinciden, salimos del recorrido de los estados finales y vaciamos la palabra utilizada para consultar
-        validador=true;
-        stringstream().swap(estado_final);
-    }
-    }
-    if(validador==false) //en caso que no este registrada ya que fue comprobado al recorrer, registramos el estado final.
-       {
-            ui->listWidgetEFinales->addItem(QString::fromStdString(estado_final.str()));
-            stringstream().swap(estado_final);
-
-            j=valorComboBox(ui->comboBoxEFinal->currentText().toStdString());
-            estado *p = listaEstado;
-            for(i =0; i<j; i++){
-                p = p->next;
-            }
-            p->e_final = true;
-        }
-}
 }
 
 int valorComboBox(string a){
@@ -268,11 +235,13 @@ bool comprobarPalabra(string s,int pos){
     bool b = false;
     nodo *p = listaTransiciones;
     ss.str(string());
-    ss<<p->sim_transicion;
     ss2.str(string());
     ss2<<s[0];
+    if(p!=nullptr){
+        ss<<p->sim_transicion;
     cout<<"ss.str="<<ss.str()<<"  ss2.str="<<ss2.str()<<" pos="<<pos<<" p->e_salida="<<p->e_salida<<endl;  //DEBUG
-    while(p!=nullptr && s.length()>0 && (p->e_salida!=pos || ss.str()!=ss2.str())){  //Hacemos que p apunte a la transición que deseamos analizar
+    }
+    while(p!=nullptr && s.length()>0 && !(p->e_salida==pos && ss.str()==ss2.str())){  //Hacemos que p apunte a la transición que deseamos analizar
         p=p->next;
         ss.str(string());
         if(p!=nullptr){
