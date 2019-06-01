@@ -46,7 +46,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->frame_2->setVisible(false);
     ui->frame_3->setVisible(false);
     ui->frame_4->setVisible(false);
-    ui->frame_5->setVisible(false);
     appendToListEstado(&listaEstado, 0);
 }
 
@@ -262,33 +261,13 @@ void MainWindow::on_pushButton_5_clicked(){  //Botón aceptar en estado nuevo
         ui->comboBox_2->setDisabled(false);
         ui->pushButton->setDisabled(false);
         ui->pushButton_2->setDisabled(false);
-        ui->comboBox_2->setCurrentIndex(cant_estados+1);
         ui->frame_4->setVisible(false);
-    }
-}
-
-void MainWindow::on_pushButton_6_clicked(){
-    if(!(ui->lineEdit_4->text().isEmpty())  //Valor de int no vacío
-            &&stringEntero(ui->lineEdit_4->text().toStdString())  //Sólo numeros en el numero de estado
-            && cant_estados<=stoi(ui->lineEdit_4->text().toStdString())  //Estado no existente previamente
-            ){
-        e_llegada=stoi(ui->lineEdit_4->text().toStdString());
-        for(i=cant_estados;i<e_llegada+1;i++){  //Crea estados hasta el que se indica
-            ss.str(string());
-            ss<<"q"<<(i);
-            appendToListEstado(&listaEstado,i);
-            ui->comboBox->addItem(QString::fromStdString(ss.str()));
-            ui->comboBox_2->addItem(QString::fromStdString(ss.str()));
-            ui->listWidget->addItem(QString::fromStdString(ss.str()));
+        if(ui->comboBox->currentText()=="Nuevo estado"){
+            ui->comboBox->setCurrentIndex(cant_estados+1);
         }
-        cant_estados=e_llegada+1;
-        ui->comboBox->setDisabled(false);
-        ui->lineEdit->setDisabled(false);
-        ui->comboBox_2->setDisabled(false);
-        ui->pushButton->setDisabled(false);
-        ui->pushButton_2->setDisabled(false);
-        ui->comboBox->setCurrentIndex(cant_estados+1);
-        ui->frame_5->setVisible(false);
+        else{
+            ui->comboBox_2->setCurrentIndex(cant_estados+1);
+        }
     }
 }
 
@@ -299,7 +278,7 @@ void MainWindow::on_comboBox_currentTextChanged(const QString &arg1){
         ui->comboBox_2->setDisabled(true);
         ui->pushButton->setDisabled(true);
         ui->pushButton_2->setDisabled(true);
-        ui->frame_5->setVisible(true);
+        ui->frame_4->setVisible(true);
     }
 }
 
@@ -326,22 +305,17 @@ bool stringEntero(string s){
     return b;
 }
 
-void MainWindow::on_pushButton_7_clicked(){
+void MainWindow::on_pushButton_7_clicked(){  //Botón X en el frame "Nuevo estado"
     ui->comboBox->setDisabled(false);
     ui->lineEdit->setDisabled(false);
     ui->comboBox_2->setDisabled(false);
     ui->pushButton->setDisabled(false);
     ui->pushButton_2->setDisabled(false);
     ui->frame_4->setVisible(false);
-    ui->comboBox_2->setCurrentIndex(0);
-}
-
-void MainWindow::on_pushButton_8_clicked(){
-    ui->comboBox->setDisabled(false);
-    ui->lineEdit->setDisabled(false);
-    ui->comboBox_2->setDisabled(false);
-    ui->pushButton->setDisabled(false);
-    ui->pushButton_2->setDisabled(false);
-    ui->frame_5->setVisible(false);
-    ui->comboBox->setCurrentIndex(0);
+    if(ui->comboBox->currentText()=="Nuevo estado"){
+        ui->comboBox->setCurrentIndex(0);
+    }
+    else{
+        ui->comboBox_2->setCurrentIndex(0);
+    }
 }
